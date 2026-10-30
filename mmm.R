@@ -3073,6 +3073,1195 @@ run_valuebox_app <- function() {
 # "Analyze customer words"        -> tokens + counts + lexicons
 # "Interactive filter"            -> input + reactive + output
 # "Dashboard"                     -> filters + KPIs + table + charts
+## Install once if needed:
+# install.packages("plotly")
+
+library(plotly)
+
+df <- iris
+
+# Explore first
+str(df)
+summary(df)
+colSums(is.na(df))
+
+# --------------------------------------------------
+# 1. Interactive scatter plot
+# --------------------------------------------------
+
+scatter <- plot_ly(
+  data = df,
+  x = ~Sepal.Length,
+  y = ~Petal.Length,
+  color = ~Species,
+  type = "scatter",
+  mode = "markers"
+) |>
+  layout(
+    title = "Sepal Length versus Petal Length",
+    xaxis = list(title = "Sepal Length (cm)"),
+    yaxis = list(title = "Petal Length (cm)")
+  )
+
+scatter
+
+# --------------------------------------------------
+# 2. Interactive histogram of Sepal.Length
+# --------------------------------------------------
+
+histogram <- plot_ly(
+  data = df,
+  x = ~Sepal.Length,
+  type = "histogram",
+  marker = list(color = "skyblue")
+) |>
+  layout(
+    title = "Distribution of Sepal Length",
+    xaxis = list(title = "Sepal Length (cm)"),
+    yaxis = list(title = "Count")
+  )
+
+histogram
+
+# --------------------------------------------------
+# 3. Interactive bubble chart
+# --------------------------------------------------
+
+bubble <- plot_ly(
+  data = df,
+  x = ~Sepal.Length,
+  y = ~Petal.Length,
+  size = ~Petal.Width,
+  sizes = c(5, 25),
+  color = ~Species,
+  type = "scatter",
+  mode = "markers",
+  marker = list(opacity = 0.6),
+  text = ~paste("Petal Width:", Petal.Width, "cm")
+) |>
+  layout(
+    title = "Iris Bubble Chart",
+    xaxis = list(title = "Sepal Length (cm)"),
+    yaxis = list(title = "Petal Length (cm)")
+  )
+
+bubble
+
+# size maps Petal.Width to bubble size.
+# sizes sets the displayed size range.
+# text adds information to the hover display.
+
+# --------------------------------------------------
+# 4. Interactive correlation heatmap
+# --------------------------------------------------
+
+# Select ALL numerical columns automatically
+numeric_data <- df[, sapply(df, is.numeric)]
+
+# Compute Pearson correlations
+r <- cor(numeric_data, use = "complete.obs")
+
+round(r, 2)
+
+heatmap_plot <- plot_ly(
+  x = colnames(r),
+  y = rownames(r),
+  z = r,
+  type = "heatmap",
+  colors = colorRamp(c("blue", "white", "red")),
+  zmin = -1,
+  zmax = 1
+) |>
+  layout(
+    title = "Correlation Heatmap of Iris Measurements",
+    xaxis = list(title = ""),
+    yaxis = list(title = "")
+  )
+
+heatmap_plot
+
+
+
+
+# Install once if needed:
+# install.packages("ggplot2")
+
+library(ggplot2)
+
+df <- diamonds
+head(df)
+str(df)
+
+# --------------------------------------------------
+# 1. Histogram with border and fill colors
+# --------------------------------------------------
+
+ggplot(df, aes(x = carat)) +
+  geom_histogram(
+    bins = 30,
+    color = "black",      # Border color
+    fill = "skyblue"      # Interior color
+  ) +
+  labs(
+    title = "Distribution of Carat",
+    x = "Carat",
+    y = "Count"
+  )
+
+# --------------------------------------------------
+# 2. Histogram with bin width = 0.01
+# --------------------------------------------------
+
+ggplot(df, aes(x = carat)) +
+  geom_histogram(
+    binwidth = 0.01,
+    color = "black",
+    fill = "orange"
+  ) +
+  labs(title = "Carat Distribution: Bin Width 0.01")
+
+# --------------------------------------------------
+# 3. Scatter plot: X = carat, Y = price
+#    Color represents clarity
+# --------------------------------------------------
+
+ggplot(df, aes(x = carat, y = price, color = clarity)) +
+  geom_point(alpha = 0.4) +
+  labs(
+    title = "Carat versus Price",
+    x = "Carat",
+    y = "Price"
+  )
+
+# alpha controls transparency: smaller values reduce overplotting.
+
+# --------------------------------------------------
+# 4. Add a separate trend line for each clarity group
+# --------------------------------------------------
+
+ggplot(df, aes(x = carat, y = price, color = clarity)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Carat versus Price with Trend Lines")
+
+# method = "lm": fitted straight lines
+# se = FALSE: hide confidence bands
+# Use se = TRUE to display confidence bands.
+
+# Alternative: ONE overall line, with points colored by clarity
+ggplot(df, aes(x = carat, y = price)) +
+  geom_point(aes(color = clarity), alpha = 0.3) +
+  geom_smooth(method = "lm", se = FALSE, color = "black")
+
+# --------------------------------------------------
+# 5a. Separate panels for each clarity category
+# --------------------------------------------------
+
+p <- ggplot(df, aes(x = carat, y = price)) +
+  geom_point(color = "steelblue", alpha = 0.4) +
+  facet_wrap(~ clarity)
+
+p
+
+# --------------------------------------------------
+# 5b. Add title, axis labels, and a customized theme
+# --------------------------------------------------
+
+p +
+  labs(
+    title = "Diamond Price by Carat and Clarity",
+    x = "Carat",
+    y = "Price"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(
+      size = 16,
+      face = "bold",
+      hjust = 0.5
+    ),
+    plot.background = element_rect(
+      fill = "lightyellow",
+      color = NA
+    ),
+    panel.background = element_rect(
+      fill = "aliceblue",
+      color = NA
+    )
+  )
+
+# --------------------------------------------------
+# 6. Carat distribution across cut categories
+#    X = categorical variable; Y = numerical variable
+# --------------------------------------------------
+
+# Violin plot
+ggplot(df, aes(x = cut, y = carat)) +
+  geom_violin(fill = "lightgreen", color = "black") +
+  labs(
+    title = "Carat Distribution by Cut",
+    x = "Cut",
+    y = "Carat"
+  ) +
+  theme_minimal()
+
+# Box plot
+ggplot(df, aes(x = cut, y = carat)) +
+  geom_boxplot(fill = "skyblue", color = "black") +
+  labs(
+    title = "Carat by Cut",
+    x = "Cut",
+    y = "Carat"
+  ) +
+  theme_minimal()
+
+# Optional: combine both in one plot
+ggplot(df, aes(x = cut, y = carat)) +
+  geom_violin(fill = "lightgreen") +
+  geom_boxplot(width = 0.15, fill = "white") +
+  theme_minimal()
+
+
+
+
+
+
+# =====================================================================
+# CLASSIFICATION EXAM SCRIPT: QUESTIONS 35-43
+# =====================================================================
 #
+# HOW TO USE:
+# 1. Install the packages once.
+# 2. Run COMMON SETUP.
+# 3. Run the question you need.
+# 4. Read the printed results; do not assume which model wins.
+#
+# No missing values are present in iris or the selected mtcars columns.
+# For other datasets, inspect and handle missing values appropriately.
+#
+# =====================================================================
+# PACKAGE INSTALLATION: RUN ONCE IF NEEDED
+# =====================================================================
+
+# install.packages(c(
+#   "rpart", "rpart.plot", "e1071", "class",
+#   "randomForest", "gbm", "pROC"
+# ))
+
+
+# =====================================================================
+# COMMON SETUP A: REUSABLE CLASSIFICATION METRICS
+# =====================================================================
+#
+# Confusion matrix orientation:
+# ROWS = ACTUAL classes
+# COLUMNS = PREDICTED classes
+#
+# TP = correctly predicted as this class
+# FP = incorrectly predicted as this class
+# FN = this class incorrectly predicted as another class
+#
+# Accuracy  = correct predictions / total predictions
+# Precision = TP / (TP + FP)
+# Recall    = TP / (TP + FN)
+# F1        = 2TP / (2TP + FP + FN)
+#
+# For iris, calculate precision, recall and F1 for EACH species.
+# Macro averages give every species equal weight.
+
+evaluate <- function(actual, predicted) {
+
+  actual <- factor(actual)
+  predicted <- factor(predicted, levels = levels(actual))
+
+  stopifnot(
+    length(actual) == length(predicted),
+    length(actual) > 0,
+    !anyNA(actual),
+    !anyNA(predicted)
+  )
+
+  cm <- table(
+    Actual = actual,
+    Predicted = predicted
+  )
+
+  TP <- diag(cm)
+  FP <- colSums(cm) - TP
+  FN <- rowSums(cm) - TP
+
+  precision <- TP / (TP + FP)
+  recall <- TP / (TP + FN)
+  f1 <- 2 * TP / (2 * TP + FP + FN)
+
+  # Undefined ratios are reported as NA.
+  precision[!is.finite(precision)] <- NA
+  recall[!is.finite(recall)] <- NA
+  f1[!is.finite(f1)] <- NA
+
+  list(
+    confusion = cm,
+
+    per_class = data.frame(
+      Precision = as.numeric(precision),
+      Recall = as.numeric(recall),
+      F1 = as.numeric(f1),
+      row.names = rownames(cm)
+    ),
+
+    overall = c(
+      Accuracy = sum(TP) / sum(cm),
+      Macro_Precision = mean(precision),
+      Macro_Recall = mean(recall),
+      Macro_F1 = mean(f1)
+    )
+  )
+}
+
+# Using the function:
+# result <- evaluate(actual_labels, predicted_labels)
+# result$confusion
+# result$per_class
+# result$overall
+#
+# Results are proportions: 0.95 means 95%.
+# Multiply by 100 when a percentage is required.
+#
+# Do not use na.rm=TRUE silently in macro averages:
+# an undefined class metric should be investigated.
+
+
+# =====================================================================
+# COMMON SETUP B: STRATIFIED TRAIN/TEST SPLIT
+# =====================================================================
+#
+# Stratified means sampling within each class.
+# This helps keep every class represented in training and testing.
+
+split_index <- function(target, proportion = 0.8) {
+
+  index <- integer(0)
+
+  for (group in unique(as.character(target))) {
+
+    rows <- which(target == group)
+
+    selected <- sample(
+      rows,
+      size = floor(proportion * length(rows))
+    )
+
+    index <- c(index, selected)
+  }
+
+  index
+}
+
+# For a different dataset, check that each class has enough observations.
+# Very small classes may need a different evaluation strategy.
+
+
+# =====================================================================
+# COMMON SETUP C: EXPLORE IRIS AND SPLIT ONCE
+# =====================================================================
+
+df <- iris
+
+# The target must be categorical.
+df$Species <- factor(df$Species)
+
+head(df)
+str(df)
+summary(df)
+
+colSums(is.na(df))
+table(df$Species)
+
+# Optional exploration plot
+pairs(
+  df[, 1:4],
+  col = as.integer(df$Species),
+  pch = 19
+)
+
+# Predictor names
+features <- c(
+  "Sepal.Length",
+  "Sepal.Width",
+  "Petal.Length",
+  "Petal.Width"
+)
+
+# Split before learning scaling/normalization values.
+set.seed(123)
+
+index <- split_index(df$Species)
+
+train <- df[index, ]
+test <- df[-index, ]
+
+table(train$Species)   # 40 of each species
+table(test$Species)    # 10 of each species
+
+# Separate predictors and target for algorithms that need them.
+x_train <- train[, features]
+x_test <- test[, features]
+
+y_train <- train$Species
+y_test <- test$Species
+
+# All iris models below use these SAME rows.
+#
+# Species ~ . means Species predicted by all other columns.
+# This is safe here because iris contains only the four predictors.
+# For another dataset, exclude IDs, names and leaked target information.
+
+
+# =====================================================================
+# Q35. DECISION TREE CLASSIFICATION
+# =====================================================================
+
+library(rpart)
+library(rpart.plot)
+
+# Build
+tree_model <- rpart(
+  Species ~ .,
+  data = train,
+  method = "class"
+)
+
+# Visualize
+rpart.plot(
+  tree_model,
+  type = 2,
+  extra = 104,
+  main = "Iris Decision Tree"
+)
+
+# Predict class labels
+tree_pred <- predict(
+  tree_model,
+  newdata = test,
+  type = "class"
+)
+
+# Evaluate
+tree_result <- evaluate(y_test, tree_pred)
+
+tree_result$confusion
+round(tree_result$overall["Accuracy"] * 100, 2)
+
+# Feature importance
+tree_importance <- sort(
+  tree_model$variable.importance,
+  decreasing = TRUE
+)
+
+tree_importance
+
+# Most important feature, if the tree made any splits
+if (length(tree_importance) > 0) {
+  print(names(tree_importance)[1])
+}
+
+# THINK:
+# A decision tree asks a sequence of questions about feature values.
+# Read the diagram from its root down to a terminal node.
+# It does not need standardization.
+#
+# Importance may include surrogate splits, so a variable can receive
+# importance even if it is not shown as a primary split.
+
+
+# =====================================================================
+# Q36. NAIVE BAYES CLASSIFICATION
+# =====================================================================
+
+library(e1071)
+
+# Build
+nb_model <- naiveBayes(
+  Species ~ .,
+  data = train
+)
+
+# Predict
+nb_pred <- predict(
+  nb_model,
+  newdata = test,
+  type = "class"
+)
+
+# Evaluate
+nb_result <- evaluate(y_test, nb_pred)
+
+nb_result$confusion
+round(nb_result$per_class, 3)
+round(nb_result$overall, 3)
+
+# Optional: predicted probabilities for each species
+head(predict(nb_model, newdata = test, type = "raw"))
+
+# THINK:
+# Naive Bayes selects the class with the highest estimated probability.
+# It assumes predictors are independent conditional on the class.
+# For numerical variables, this implementation uses Gaussian
+# class-conditional distributions.
+#
+# Interpretation:
+# - Diagonal confusion-matrix entries are correct.
+# - Off-diagonal entries show which species are confused.
+# - Low precision: other species are often incorrectly given this label.
+# - Low recall: flowers of this species are often missed.
+
+
+# =====================================================================
+# Q37. SVM WITH RADIAL KERNEL
+# =====================================================================
+
+library(e1071)
+
+# 1. Standardize using TRAINING means and standard deviations
+svm_train_x <- scale(x_train)
+
+# 2. Apply those SAME values to the test features
+svm_test_x <- scale(
+  x_test,
+  center = attr(svm_train_x, "scaled:center"),
+  scale = attr(svm_train_x, "scaled:scale")
+)
+
+# 3. Build
+svm_model <- svm(
+  x = svm_train_x,
+  y = y_train,
+  kernel = "radial",
+  cost = 1,
+  gamma = 1 / ncol(svm_train_x),
+  scale = FALSE
+)
+
+# scale=FALSE because we already standardized.
+# y_train is a factor, so this is classification.
+
+# 4. Predict
+svm_pred <- predict(
+  svm_model,
+  newdata = svm_test_x
+)
+
+# 5. Evaluate
+svm_result <- evaluate(y_test, svm_pred)
+
+svm_result$confusion
+round(svm_result$per_class, 3)
+round(svm_result$overall, 3)
+
+# 6. Compare with Decision Tree
+# Run Q35 first.
+round(rbind(
+  Decision_Tree = tree_result$overall,
+  SVM = svm_result$overall
+), 3)
+
+# THINK:
+# Radial kernel: permits nonlinear decision boundaries.
+# cost: controls the penalty for classification errors.
+# gamma: controls how locally observations influence the boundary.
+#
+# These are starting settings, not tuned settings.
+# Do not run scale(x_test) independently.
+# Do not standardize the Species column.
+
+
+# =====================================================================
+# Q38. K-NEAREST NEIGHBOURS: K = 3, 5, 7
+# =====================================================================
+
+library(class)
+
+# Predictors: x_train, x_test
+# Target: y_train, y_test
+#
+# MIN-MAX NORMALIZATION:
+# normalized = (value - training minimum) /
+#              (training maximum - training minimum)
+#
+# Although the question lists normalization before splitting,
+# learn the normalization values AFTER splitting to avoid leakage.
+
+knn_train_x <- x_train
+knn_test_x <- x_test
+
+for (col in features) {
+
+  lower <- min(x_train[[col]])
+  upper <- max(x_train[[col]])
+
+  # A constant training predictor cannot be normalized this way.
+  stopifnot(upper > lower)
+
+  knn_train_x[[col]] <- (x_train[[col]] - lower) / (upper - lower)
+  knn_test_x[[col]] <- (x_test[[col]] - lower) / (upper - lower)
+}
+
+# Training values lie in [0,1].
+# Test values can be outside [0,1] if they exceed the training range.
+# That is not automatically an error; don't silently clip them.
+
+# Build/predict for each K
+set.seed(123)
+
+knn_pred3 <- knn(
+  train = knn_train_x,
+  test = knn_test_x,
+  cl = y_train,
+  k = 3
+)
+
+knn_pred5 <- knn(
+  train = knn_train_x,
+  test = knn_test_x,
+  cl = y_train,
+  k = 5
+)
+
+knn_pred7 <- knn(
+  train = knn_train_x,
+  test = knn_test_x,
+  cl = y_train,
+  k = 7
+)
+
+# knn() directly returns predictions.
+# It does not return a fitted model like lm() or rpart().
+
+knn_accuracy <- data.frame(
+  K = c(3, 5, 7),
+  Accuracy = c(
+    mean(knn_pred3 == y_test),
+    mean(knn_pred5 == y_test),
+    mean(knn_pred7 == y_test)
+  )
+)
+
+knn_accuracy
+
+# Show every K tied for highest test accuracy
+best_K_values <- knn_accuracy$K[
+  knn_accuracy$Accuracy == max(knn_accuracy$Accuracy)
+]
+
+best_K_values
+
+# If tied, choose the first/smallest tested K for this exercise
+best_K <- best_K_values[1]
+
+knn_predictions <- list(
+  "3" = knn_pred3,
+  "5" = knn_pred5,
+  "7" = knn_pred7
+)
+
+best_knn_pred <- knn_predictions[[as.character(best_K)]]
+
+best_knn_result <- evaluate(y_test, best_knn_pred)
+
+best_K
+best_knn_result$confusion
+
+# IMPORTANT:
+# This identifies the best K on this particular test split.
+# Selecting K from test results makes its reported performance optimistic.
+# For proper tuning, select K using validation/CV inside training data
+# and reserve the final test set for one evaluation.
+#
+# For Q42 we use K=5 fixed in advance, avoiding selection of K on that
+# comparison's test results.
+
+knn5_result <- evaluate(y_test, knn_pred5)
+
+
+# =====================================================================
+# Q39. RANDOM FOREST WITH 100 TREES
+# =====================================================================
+
+library(randomForest)
+
+set.seed(123)
+
+rf_model <- randomForest(
+  Species ~ .,
+  data = train,
+  ntree = 100,
+  importance = TRUE
+)
+
+rf_pred <- predict(
+  rf_model,
+  newdata = test
+)
+
+rf_result <- evaluate(y_test, rf_pred)
+
+rf_result$confusion
+round(rf_result$per_class, 3)
+round(rf_result$overall, 3)
+
+# Variable importance plot
+varImpPlot(
+  rf_model,
+  type = 1,
+  main = "Random Forest: Variable Importance"
+)
+
+# type=1 uses permutation-based importance.
+rf_importance <- importance(rf_model, type = 1)
+
+rf_importance
+
+most_important_rf <- rownames(rf_importance)[
+  which.max(rf_importance[, 1])
+]
+
+most_important_rf
+
+# THINK:
+# Random Forest combines predictions from many randomized trees.
+# ntree=100 means 100 trees.
+# importance=TRUE requests permutation importance calculations.
+#
+# A larger importance value indicates greater model reliance under
+# this importance measure; it is not evidence of causation.
+#
+# The confusion matrix inside print(rf_model) is based on out-of-bag
+# predictions. Our rf_result$confusion uses the separate test set.
+
+
+# =====================================================================
+# Q40. GRADIENT BOOSTING CLASSIFICATION
+# =====================================================================
+
+library(gbm)
+
+set.seed(123)
+
+gbm_model <- gbm(
+  Species ~ .,
+  data = train,
+  distribution = "multinomial",
+  n.trees = 100,
+  interaction.depth = 2,
+  shrinkage = 0.05,
+  n.minobsinnode = 5,
+  bag.fraction = 0.8,
+  verbose = FALSE
+)
+
+# Predict class probabilities.
+# For multinomial GBM, the returned object has dimensions:
+# observations x classes x requested tree counts.
+gbm_probability <- predict(
+  gbm_model,
+  newdata = test,
+  n.trees = 100,
+  type = "response"
+)
+
+# Convert to an observations-by-classes matrix.
+probability_matrix <- matrix(
+  gbm_probability,
+  nrow = nrow(test),
+  ncol = length(gbm_model$classes)
+)
+
+colnames(probability_matrix) <- gbm_model$classes
+
+head(probability_matrix)
+
+# Choose the class with the largest probability in each row.
+gbm_pred <- factor(
+  gbm_model$classes[
+    max.col(probability_matrix, ties.method = "first")
+  ],
+  levels = levels(y_train)
+)
+
+gbm_result <- evaluate(y_test, gbm_pred)
+
+gbm_result$confusion
+round(gbm_result$overall["Accuracy"] * 100, 2)
+
+# Important predictors:
+# summary.gbm() displays a relative-influence plot and returns a table.
+gbm_importance <- summary(
+  gbm_model,
+  n.trees = 100,
+  plotit = TRUE
+)
+
+gbm_importance
+
+gbm_importance$var[
+  which.max(gbm_importance$rel.inf)
+]
+
+# THINK:
+# Gradient boosting adds trees sequentially to reduce the loss.
+# "multinomial" is used because iris has three classes.
+# n.trees is the number of boosting iterations; multinomial fitting
+# uses class-specific tree contributions.
+# shrinkage is the learning rate.
+# interaction.depth controls tree complexity.
+#
+# The settings above are fixed example values.
+# Choose settings with training validation if tuning is requested.
+
+
+# =====================================================================
+# Q41. LOGISTIC REGRESSION: AUTOMATIC OR MANUAL TRANSMISSION
+# =====================================================================
+
+library(pROC)
+
+# Separate objects avoid overwriting the iris training/test data.
+cars <- mtcars[, c("am", "mpg", "hp", "wt")]
+
+# Original coding: 0 = Automatic; 1 = Manual.
+# Put Automatic first and Manual second.
+cars$am <- factor(
+  cars$am,
+  levels = c(0, 1),
+  labels = c("Automatic", "Manual")
+)
+
+str(cars)
+table(cars$am)
+
+# Stratified split
+set.seed(123)
+cars_index <- split_index(cars$am)
+
+cars_train <- cars[cars_index, ]
+cars_test <- cars[-cars_index, ]
+
+table(cars_train$am)
+table(cars_test$am)
+
+# Fit
+logistic_model <- glm(
+  am ~ mpg + hp + wt,
+  data = cars_train,
+  family = binomial
+)
+
+summary(logistic_model)
+
+# For a two-level factor, glm(binomial) models the probability
+# of the SECOND level: Manual here.
+
+manual_probability <- predict(
+  logistic_model,
+  newdata = cars_test,
+  type = "response"
+)
+
+manual_probability
+
+# Threshold at 0.5
+logistic_pred <- factor(
+  ifelse(
+    manual_probability >= 0.5,
+    "Manual",
+    "Automatic"
+  ),
+  levels = levels(cars$am)
+)
+
+data.frame(
+  Actual = cars_test$am,
+  Probability_Manual = manual_probability,
+  Predicted = logistic_pred
+)
+
+# Confusion matrix and metrics
+logistic_result <- evaluate(cars_test$am, logistic_pred)
+
+logistic_result$confusion
+
+# For binary classification, explicitly state the positive class.
+# Here: Manual is positive.
+binary_metrics <- c(
+  Accuracy = unname(logistic_result$overall["Accuracy"]),
+  Precision = logistic_result$per_class["Manual", "Precision"],
+  Recall = logistic_result$per_class["Manual", "Recall"],
+  F1 = logistic_result$per_class["Manual", "F1"]
+)
+
+round(binary_metrics, 3)
+
+# ROC and AUC use PROBABILITIES, not the thresholded class labels.
+roc_curve <- pROC::roc(
+  response = cars_test$am,
+  predictor = manual_probability,
+  levels = c("Automatic", "Manual"),
+  direction = "<",
+  quiet = TRUE
+)
+
+plot(
+  roc_curve,
+  col = "blue",
+  legacy.axes = TRUE,
+  main = "Logistic Regression ROC Curve"
+)
+
+as.numeric(pROC::auc(roc_curve))
+
+# Coefficient interpretation
+coefficient_results <- data.frame(
+  Coefficient = coef(logistic_model),
+  Odds_Ratio = exp(coef(logistic_model))
+)
+
+coefficient_results
+
+# MODEL:
+# log(p / (1-p)) = b0 + b1*mpg + b2*hp + b3*wt
+# where p = probability of Manual.
+#
+# Holding other predictors constant:
+# coefficient > 0: higher odds of Manual.
+# coefficient < 0: lower odds of Manual.
+# exp(coefficient): multiplicative change in odds per unit increase.
+#
+# Example interpretation:
+# If exp(b_hp)=1.10, one additional horsepower is associated with
+# 1.10 times the odds of Manual, holding mpg and wt constant.
+# This is NOT a 10 percentage-point increase in probability.
+#
+# wt is measured in 1000 lb.
+# The intercept refers to mpg=hp=wt=0, an unrealistic car.
+#
+# mtcars is very small. If glm reports non-convergence or fitted
+# probabilities numerically 0 or 1, inspect for separation and unstable
+# coefficients. Do not interpret huge coefficients as reliable effects.
+# Increasing the iteration limit alone does not fix separation.
+#
+# AUC describes ranking across thresholds, not probability calibration.
+# A high AUC on a tiny test set can be highly uncertain.
+
+
+# =====================================================================
+# Q42. COMPARE FIVE CLASSIFICATION ALGORITHMS
+# =====================================================================
+#
+# Run COMMON SETUP and Q35-Q39 first.
+# All models use identical iris training and test rows.
+# SVM/KNN transformations were learned from training rows only.
+# KNN uses K=5, fixed in advance.
+
+results <- list(
+  Decision_Tree = tree_result,
+  Naive_Bayes = nb_result,
+  SVM = svm_result,
+  KNN_K5 = knn5_result,
+  Random_Forest = rf_result
+)
+
+# Print every confusion matrix
+for (model_name in names(results)) {
+  cat("\n", model_name, "\n")
+  print(results[[model_name]]$confusion)
+}
+
+# Comparison table
+comparison <- rbind(
+  Decision_Tree = tree_result$overall,
+  Naive_Bayes = nb_result$overall,
+  SVM = svm_result$overall,
+  KNN_K5 = knn5_result$overall,
+  Random_Forest = rf_result$overall
+)
+
+round(comparison, 3)
+
+# Display highest accuracy first
+comparison[
+  order(comparison[, "Accuracy"], decreasing = TRUE),
+]
+
+# Report ALL models tied for highest accuracy
+best_models <- rownames(comparison)[
+  comparison[, "Accuracy"] == max(comparison[, "Accuracy"])
+]
+
+best_models
+
+# Optional accuracy chart
+barplot(
+  comparison[, "Accuracy"],
+  ylim = c(0, 1),
+  col = "steelblue",
+  las = 2,
+  ylab = "Test Accuracy",
+  main = "Classifier Comparison"
+)
+
+# Interpret:
+# - Higher accuracy means more correct predictions on these test rows.
+# - Inspect macro F1 and per-class recall as well.
+# - If several models tie, report the tie.
+# - These results do not establish a universally best algorithm.
+# - These are mostly default/fixed settings, not equally optimized models.
+
+
+# =====================================================================
+# Q43. RANDOM FOREST: FIVE-FOLD CROSS-VALIDATION
+# =====================================================================
+#
+# Start fresh for this question.
+# Each observation is held out once and used for training four times.
+# Each prediction must come from a model that did NOT train on that row.
+
+library(randomForest)
+
+cv_data <- iris
+cv_data$Species <- factor(cv_data$Species)
+
+set.seed(123)
+
+# Create 5 folds, balanced within each species.
+fold_id <- integer(nrow(cv_data))
+
+for (species in levels(cv_data$Species)) {
+
+  rows <- which(cv_data$Species == species)
+
+  fold_id[rows] <- sample(
+    rep(1:5, length.out = length(rows))
+  )
+}
+
+table(Fold = fold_id, Species = cv_data$Species)
+
+# Store predictions in original row order.
+cv_predictions <- rep(NA_character_, nrow(cv_data))
+fold_accuracy <- numeric(5)
+
+# Train five separate forests.
+for (fold in 1:5) {
+
+  fold_train <- cv_data[fold_id != fold, ]
+  fold_test <- cv_data[fold_id == fold, ]
+
+  fold_model <- randomForest(
+    Species ~ .,
+    data = fold_train,
+    ntree = 100
+  )
+
+  fold_pred <- predict(
+    fold_model,
+    newdata = fold_test
+  )
+
+  cv_predictions[fold_id == fold] <- as.character(fold_pred)
+
+  fold_accuracy[fold] <- mean(
+    fold_pred == fold_test$Species
+  )
+}
+
+# Accuracy for each fold
+data.frame(
+  Fold = 1:5,
+  Accuracy = fold_accuracy
+)
+
+mean(fold_accuracy)
+
+# Combined out-of-fold confusion matrix and accuracy
+cv_result <- evaluate(
+  cv_data$Species,
+  cv_predictions
+)
+
+cv_result$confusion
+round(cv_result$overall, 3)
+
+# Refit a final model on all observations AFTER CV evaluation.
+set.seed(123)
+
+final_rf <- randomForest(
+  Species ~ .,
+  data = cv_data,
+  ntree = 100,
+  importance = TRUE
+)
+
+varImpPlot(
+  final_rf,
+  type = 1,
+  main = "Final Random Forest: Feature Importance"
+)
+
+final_importance <- importance(final_rf, type = 1)
+final_importance
+
+rownames(final_importance)[
+  which.max(final_importance[, 1])
+]
+
+# IMPORTANT:
+# cv_result measures predictions from held-out folds.
+# final_rf is the final fitted model used for interpretation/new data.
+# Do NOT replace CV accuracy with accuracy on final_rf's training rows.
+#
+# If you add learned preprocessing, fit it INSIDE each fold.
+# Tree-based Random Forest does not require scaling here.
+#
+# Interpretation:
+# - Report average/pooled cross-validation accuracy.
+# - Describe which species are confused.
+# - Identify the top importance variable from the printed output.
+# - Discuss variation across fold accuracies.
+# - Importance does not prove a causal relationship.
+
+
+# =====================================================================
+# BUILT-IN HELP: USE THESE DURING THE EXAM
+# =====================================================================
+
+# ?iris
+# ?rpart
+# ?rpart.plot
+# ?naiveBayes
+# ?svm
+# ?scale
+# ?knn
+# ?randomForest
+# ?varImpPlot
+# ?gbm
+# ?predict.gbm
+# ?glm
+# ?family
+# help("roc", package = "pROC")
+# help("auc", package = "pROC")
+
+# Inspect function arguments:
+# args(knn)
+# args(randomForest)
+
+# Inspect fitted model objects:
+# names(tree_model)
+# names(rf_model)
+# str(gbm_probability)
+
+# Example code from installed documentation:
+# example(naiveBayes)
+
+
 # END OF REFERENCE
 # =====================================================================
